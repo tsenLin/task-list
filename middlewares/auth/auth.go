@@ -11,12 +11,24 @@ import (
 	"regexp"
 	"strings"
 	"task-list/config"
+	"task-list/services"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-func ValidAuth(c *gin.Context) {
+func ValidApiKey(authService services.AuthService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		apiKey := c.GetHeader("Authorization")
+		if apiKey == "" || !authService.ValidateAPIKey(apiKey) {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired API Key"})
+			return
+		}
+		c.Next()
+	}
+}
+
+func ValidSignature(c *gin.Context) {
 	xDate := c.GetHeader("X-Date")
 	if xDate == "" {
 		c.AbortWithStatus(http.StatusUnauthorized)
@@ -28,13 +40,13 @@ func ValidAuth(c *gin.Context) {
 		return
 	}
 
-	auth, ok := c.Request.Header["Authorization"]
-	if !ok || auth[0] == "" {
+	auth := c.GetHeader("Authorization")
+	if auth == "" {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
-	authMaps := parseAuthorizationHeader(auth[0])
+	authMaps := parseAuthorizationHeader(auth)
 	if _, ok := authMaps["signature"]; !ok {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return

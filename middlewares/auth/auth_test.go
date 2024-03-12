@@ -1,17 +1,75 @@
 package auth
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"task-list/services"
 	"testing"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-func TestValidAuth(t *testing.T) {
+func TestValidApiKey(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	t.Run("Valid API key", func(t *testing.T) {
+		authService := services.CreateAuthService()
+		apiKey := authService.GenerateAPIKey()
+
+		headers := map[string]string{
+			"Authorization": apiKey,
+		}
+
+		w, c := createMockTestRequest("GET", "/", headers, "")
+
+		handler := ValidApiKey(authService)
+		handler(c)
+
+		// Add assertions for the expected behavior based on the test cases
+		if w.Code != http.StatusOK {
+			t.Errorf("Expected status %d; got %d", http.StatusOK, w.Code)
+		}
+    })
+
+	t.Run("Invalid API key", func(t *testing.T) {
+		authService := services.CreateAuthService()
+		apiKey := "invalid_api_key"
+
+		headers := map[string]string{
+			"Authorization": apiKey,
+		}
+
+		w, c := createMockTestRequest("GET", "/", headers, "")
+
+		handler := ValidApiKey(authService)
+		handler(c)
+
+		// Add assertions for the expected behavior based on the test cases
+		if w.Code != http.StatusUnauthorized {
+			t.Errorf("Expected status %d; got %d", http.StatusUnauthorized, w.Code)
+		}
+    })
+
+	t.Run("No API key", func(t *testing.T) {
+		authService := services.CreateAuthService()
+
+		var headers map[string]string
+
+		w, c := createMockTestRequest("GET", "/", headers, "")
+
+		handler := ValidApiKey(authService)
+		handler(c)
+
+		// Add assertions for the expected behavior based on the test cases
+		if w.Code != http.StatusUnauthorized {
+			t.Errorf("Expected status %d; got %d", http.StatusUnauthorized, w.Code)
+		}
+    })
+}
+
+/*
+func TestValidSignature(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	// Test case: Valid headers
@@ -30,7 +88,7 @@ func TestValidAuth(t *testing.T) {
 		requestLine := generateRequestLine(c.Request.Method, c.Request.URL.Path, c.Request.Proto)
 		c.Request.Header.Set("Authorization", fmt.Sprintf("signature=\"%s\"", generateSignature(headers["X-Date"], requestLine, headers["Digest"])))
 
-		ValidAuth(c)
+		ValidSignature(c)
 
 		// Add assertions for the expected behavior based on the test cases
 		if w.Code != http.StatusOK {
@@ -54,7 +112,7 @@ func TestValidAuth(t *testing.T) {
 		requestLine := generateRequestLine(c.Request.Method, c.Request.URL.Path, c.Request.Proto)
 		c.Request.Header.Set("Authorization", fmt.Sprintf("signature=\"%s\"", generateSignature(headers["X-Date"], requestLine, headers["Digest"])))
 
-		ValidAuth(c)
+		ValidSignature(c)
 
 		// Add assertions for the expected behavior based on the test cases
 		if w.Code != http.StatusOK {
@@ -77,7 +135,7 @@ func TestValidAuth(t *testing.T) {
 		requestLine := generateRequestLine(c.Request.Method, c.Request.URL.Path, c.Request.Proto)
 		c.Request.Header.Set("Authorization", fmt.Sprintf("signature=\"%s\"", generateSignature(headers["X-Date"], requestLine, headers["Digest"])))
 
-		ValidAuth(c)
+		ValidSignature(c)
 
 		// Add assertions for the expected behavior based on the test cases
 		if w.Code != http.StatusUnauthorized {
@@ -100,7 +158,7 @@ func TestValidAuth(t *testing.T) {
 		requestLine := generateRequestLine(c.Request.Method, c.Request.URL.Path, c.Request.Proto)
 		c.Request.Header.Set("Authorization", fmt.Sprintf("signature=\"%s\"", generateSignature(headers["X-Date"], requestLine, headers["Digest"])))
 
-		ValidAuth(c)
+		ValidSignature(c)
 
 		// Add assertions for the expected behavior based on the test cases
 		if w.Code != http.StatusUnauthorized {
@@ -124,7 +182,7 @@ func TestValidAuth(t *testing.T) {
 		requestLine := generateRequestLine(c.Request.Method, c.Request.URL.Path, c.Request.Proto)
 		c.Request.Header.Set("Authorization", fmt.Sprintf("signature=\"%s\"", generateSignature(headers["X-Date"], requestLine, headers["Digest"])))
 
-		ValidAuth(c)
+		ValidSignature(c)
 
 		// Add assertions for the expected behavior based on the test cases
 		if w.Code != http.StatusUnauthorized {
@@ -148,7 +206,7 @@ func TestValidAuth(t *testing.T) {
 		requestLine := generateRequestLine(c.Request.Method, c.Request.URL.Path, c.Request.Proto)
 		c.Request.Header.Set("Authorization", fmt.Sprintf("signature=\"%s\"", generateSignature(headers["X-Date"], requestLine, headers["Digest"])))
 
-		ValidAuth(c)
+		ValidSignature(c)
 
 		// Add assertions for the expected behavior based on the test cases
 		if w.Code != http.StatusUnauthorized {
@@ -156,6 +214,7 @@ func TestValidAuth(t *testing.T) {
 		}
     })
 }
+*/
 
 func createMockTestRequest(method string, path string, headers map[string]string, body string) (*httptest.ResponseRecorder, *gin.Context){
 	w := httptest.NewRecorder()

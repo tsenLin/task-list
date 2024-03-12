@@ -19,6 +19,8 @@ func SetupRouter() *gin.Engine{
 		})
 	})
 	
+	authService := services.CreateAuthService()
+	authController := controllers.CreateAuthController(authService)
 
 	taskRepo := repositories.CreateTaskRepo(config.DbConnect())
 	taskService := services.CreateTaskService(taskRepo)
@@ -27,11 +29,14 @@ func SetupRouter() *gin.Engine{
 	// Group routes
 	api := r.Group("/v1")
 
+	// Routes for auth
+	api.GET("/apikey", authController.GenerateAPIKey)
+
 	// Routes for tasks
 	api.GET("/tasks", taskController.GetAllTasks)
 
 	// Routes for task
-	taskRoutes := api.Group("/task").Use(auth.ValidAuth)
+	taskRoutes := api.Group("/task").Use(auth.ValidApiKey(authService))
 	{
 		taskRoutes.POST("", taskController.CreateTask)
 		taskRoutes.PUT("/:id", taskController.UpdateTask)
