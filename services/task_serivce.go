@@ -9,8 +9,8 @@ import (
 type TaskService interface {
 	GetAllTasks() ([]models.Task, error)
 	GetTaskById(id int) (*models.Task, error)
-	CreateTask(task *models.TaskRequest) (*models.Task, error)
-	UpdateTask(id int, task *models.TaskRequest) (*models.Task, error)
+	CreateTask(task *models.NewTaskRequest) (*models.Task, error)
+	UpdateTask(id int, task *models.UpdateTaskRequest) (*models.Task, error)
 	DeleteTask(id int) (error)
 }
 
@@ -32,15 +32,14 @@ func (t *taskService) GetTaskById(id int) (*models.Task, error) {
 	return t.taskRepo.GetTaskById(id)
 }
 
-func (t *taskService) CreateTask(newTask *models.TaskRequest) (*models.Task, error) {
+func (t *taskService) CreateTask(newTask *models.NewTaskRequest) (*models.Task, error) {
 	task := models.Task{
 		Name: newTask.Name,
-		Status: *newTask.Status,
 	}
 	return t.taskRepo.CreateTask(&task)
 }
 
-func (t *taskService) UpdateTask(id int, updatedTask *models.TaskRequest) (*models.Task, error) {
+func (t *taskService) UpdateTask(id int, updatedTask *models.UpdateTaskRequest) (*models.Task, error) {
 	task := models.Task{
 		Name: updatedTask.Name,
 		Status: *updatedTask.Status,

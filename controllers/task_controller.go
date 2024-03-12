@@ -35,7 +35,7 @@ func (t *taskController) GetAllTasks(c *gin.Context) {
 }
 
 func (t *taskController) CreateTask(c *gin.Context) {
-    var taskRequest models.TaskRequest
+    var taskRequest models.NewTaskRequest
 	
     if err := c.ShouldBindJSON(&taskRequest); err != nil {
 		utils.HandleError(c, http.StatusBadRequest, err)
@@ -58,7 +58,7 @@ func (t *taskController) UpdateTask(c *gin.Context) {
 		return
 	}
 
-    var taskRequest models.TaskRequest
+    var taskRequest models.UpdateTaskRequest
 
     if err := c.ShouldBindJSON(&taskRequest); err != nil {
 		utils.HandleError(c, http.StatusBadRequest, err)		
