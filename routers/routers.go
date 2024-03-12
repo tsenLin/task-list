@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"task-list/config"
 	"task-list/controllers"
-	"task-list/middlewares/auth"
+	"task-list/middleware/auth"
 	"task-list/repositories"
 	"task-list/services"
 
